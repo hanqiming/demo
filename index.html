@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html style="font-size: 54.8px;">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <link rel="stylesheet" type="text/css" href="css/aui.css" />
+
+    <title>加载更多</title>
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <link rel="stylesheet" href="css/loadmore.css">
+
+    <style type="text/css">
+        .aui-list .aui-list-item-media {
+            width: 6rem;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="aui-content">
+    </div>
+
+    <!--加载更多按钮-->
+    <div class="js-load-more">加载更多</div>
+
+
+    <script src="js/zepto.min.js"></script>
+    <script src="js/loadmore.js"></script>
+
+    <script>
+        var mData = {
+            mNewsList: [] //新闻列表
+        };
+    </script>
+
+    <script type="text/javascript" src="script/api.js" ></script>
+
+
+    <!--加载更多-->
+    <script>
+        $(function(){
+
+            function getData(config, page, size){
+
+                config.isAjax = true;
+
+                var curPage = (page > 0) ? (page/size+1) : 1;
+
+                $.ajax({
+                    type: 'GET',
+                    url: 'http://api.tianapi.com/guonei/',
+                    data: {"page":curPage,"num":size,"key":"baede48881796682ab4a5cf11463bae5"},
+                    dataType: 'json',
+                    success: function(reponse){
+
+                        config.isAjax = false;
+
+                        var data = reponse.newslist;
+                        var curLength = reponse.newslist.length;
+
+                        mData.mNewsList = mData.mNewsList.concat(data);
+
+                        var result = '';
+
+                        for(var i=0; i<size; i++){
+                            result += '<li class="aui-list-item aui-list-item-middle records">';
+                            result += '    <div class="aui-media-list-item-inner" style="width: 100vw; height: 20vw">';
+                            result += '        <div class="aui-list-item-media" style="width: 20vw; height: 15vw">';
+                            result += '            <img style="width: 20vw; height: 15vw; max-width: 20vw" src='+data[i].picUrl+'>';
+                            result += '        </div>';
+                            result += '        <div class="aui-list-item-inner" style="width: 80vw">';
+                            result += '            <div class="aui-list-item-text">';
+                            result += '                <div class="aui-list-item-title" style="font-size: small">'+data[i].title+'</div>';
+                            result += '            </div>';
+                            result += '        </div>';
+                            result += '    </div>';
+                            result += '</li>';
+                        }
+
+                        $('.aui-content').append(result);
+
+                        //点击条目
+                        $("li").click(function(){
+                            var index = $(this).index();  //获取索引下标 也从0开始
+                            // var textword = $(this).text();  //文本内容
+
+                            var item = mData.mNewsList[index];
+
+                            // alert("下标索引值为：" + item +"\n"+ "文本内容是："+item.url); //  \n换行
+                            window.location.href = item.url;
+                        });
+
+                        /*******************************************/
+
+                        /*隐藏more*/
+                        if ( size > curLength){
+                            $(".js-load-more").hide();
+                            config.isEnd = true; /*停止滚动加载请求*/
+                            //提示没有了
+
+                        }else{
+                            $(".js-load-more").show();
+                        }
+                    },
+                    error: function(xhr, type){
+                        alert('Ajax error!');
+                    }
+                });
+            }
+
+            $.loadmore.get(getData, {scroll: true, size:10});
+        });
+    </script>
+
+</body>
+</html>
